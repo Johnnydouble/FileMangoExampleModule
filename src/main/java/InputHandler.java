@@ -16,7 +16,8 @@ public class InputHandler extends Thread {
     public void run() {
         Scanner inputScanner = new Scanner(System.in);
         Message m;
-        while (true) {
+        boolean cont = true;
+        while (cont) {
             String input = inputScanner.nextLine();
             try {
                 m = g.fromJson(input, Message.class);
@@ -26,8 +27,9 @@ public class InputHandler extends Thread {
             }
 
             //handled types
-            if (m.Input.MsgTyp.equals(new messageType(0)))
+            if (m.Input.MsgType == 0)
             handleAnalysisRequest(m);
+            cont = false;//                                                Exit After Complete
         }
     }
 
@@ -42,9 +44,17 @@ public class InputHandler extends Thread {
             img = ImageIO.read(f);
         } catch (IOException e) {
             //do nothing
+            System.err.println(f);
             return;
         }
 
         Color result = new ImageAnalyzer().analyze(img);
+        String colorName = new ColorNameRequester().getColorName(result);
+        var outMsg = generateOutputMessage(m, colorName);
+        System.out.println(g.toJson(outMsg)); //                                     Print output message
+    }
+
+    Message generateOutputMessage(Message in, String colorName){
+        return in.appendToMsg(in, in.Input.Data, colorName);
     }
 }
